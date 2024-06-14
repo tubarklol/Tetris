@@ -9,5 +9,8 @@ namespace Block
         protected abstract Position StartOffset{get;}
 
         public abstract int Id {get; }
+
+        private int currentRotationState;
+        private int currentOffset;
     }
 }
