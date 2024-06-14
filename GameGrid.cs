@@ -1,8 +1,12 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using System; 
 using System.Collections.Generic; 
-using System.Linq; 
-using System.Text; 
+using System.Linq;
+using System.Net.Http.Headers;
+using System.Net.NetworkInformation;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks; 
 
 namespace Tetris 
@@ -37,17 +41,54 @@ namespace Tetris
                 Console.WriteLine(); 
             }
         }
-
+        public void populateGridWithBasicData()
+        {
+            bool on = true; 
+            for(int i = Rows/2; i<Rows; i++)
+            {
+                if(i%2==0)
+                {
+                    for(int j = 0; j<Columns; j++)
+                    {
+                        grid[i,j] = 1; 
+                    }
+                }
+                else
+                {
+                    for(int j = 0; j<Columns; j++)
+                    {
+                        if(on==true)
+                        {
+                            grid[i,j] = 1; 
+                            on = false; 
+                        }
+                        else
+                        {
+                            grid[i,j] = 0; 
+                            on = true; 
+                        }
+                    }
+                }
+            }
+        }
+        public void initializeColumnPiece(int r, int c)
+        {
+            if(c>Columns-4 || r>Rows-4)
+            {
+                Console.WriteLine("Grid for shape will not fit at current column"); 
+                return; 
+            }
+            int[,] shapeGrid = {{0,1,0,0}, {0,1,0,0}, {0,1,0,0}, {0,1,0,0}}; 
+        
+        }
         public bool isInside(int r, int c)
         {
             return r<Rows && r>=0 && c<Columns && c>=0; 
         }
-
         public bool isEmpty(int r, int c)
         {
             return isInside(r,c) && grid[r,c]==0; 
         }
-
         public bool isEntireRowFull(int r)
         {
             for(int i = 0; i<Columns; i++)
@@ -59,7 +100,6 @@ namespace Tetris
             }
             return true; 
         }
-        
         public bool isEntireRowEmpty(int r)
         {
             for(int i = 0; i<Columns; i++)
@@ -71,31 +111,37 @@ namespace Tetris
             }
             return true; 
         }
-
-        protected void clearRow(int r)
+        public void clearRow(int r)
         {
             for(int i = 0; i<Columns; i++)
             {
                 grid[r,i]=0;
             }
         }
-
-        protected void moveDown(int r)
+        public void moveDown(int r, int numRows)
         {
-            for(int i = r; i>0; i--)
+            for(int c = 0; c < Columns; c++)
             {
-                for(int j = 0; j<Columns; j++)
-                {
-                    grid[i,j] = grid[i-1,j]; 
-                }
+                grid[r + numRows, c] = grid[r, c]; 
+                grid[r, c] = 0; 
             }
         }
-
-        public void clearRowMoveDown(int r)
+        public int clearAllFullRows()
         {
-            clearRow(r);
-            moveDown(r); 
-            clearRow(0); 
+            int cleared = 0; 
+            for(int r = Rows-1; r>-1; r--)
+            {
+                if(isEntireRowFull(r))
+                {
+                    clearRow(r); 
+                    cleared++; 
+                }
+                else if(cleared>0)
+                {
+                    moveDown(r, cleared); 
+                }
+            }  
+            return cleared;         
         }
     }
 }
